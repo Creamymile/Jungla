@@ -3,25 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Palette */
+  --black:        #080808;
+  --black-soft:   #111110;
+  --black-mid:    #1a1a19;
+  --charcoal:     #2c2c2a;
+  --cream:        #f5f0e8;
+  --cream-dark:   #ece6d8;
+  --cream-deep:   #ddd5c4;
+  --cream-deeper: #cec4b0;
+  --white:        #fefcf8;
+  --taupe:        #c4b49a;
+  --muted:        #8a8478;
+
+  /* Typography */
+  --serif: 'Libre Baskerville', Georgia, serif;
+  --sans:  'DM Sans', sans-serif;
+
+  /* Spacing */
+  --section-padding: 120px 5.5vw;
+  --nav-height: 76px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--sans);
+  font-weight: 300;
+  overflow-x: hidden;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Grain texture overlay — luxury depth */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px;
 }
