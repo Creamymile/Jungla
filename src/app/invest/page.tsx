@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     'Invest in luxury villas in Lombok, Indonesia. Curated opportunities, transparent models, proven returns with full management.',
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getOpportunities(): Promise<InvestmentOpportunity[]> {
   if (!isSanityConfigured || !client) return []

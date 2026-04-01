@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     'Meet the Jungla team. European standards, island soul — luxury villa construction and management in Lombok, Indonesia.',
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getTeam(): Promise<TeamMember[]> {
   if (!isSanityConfigured || !client) return []

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     'Explore our luxury villa projects in Lombok, Indonesia. From delivered masterpieces to upcoming developments.',
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getProjects(): Promise<Project[]> {
   if (!isSanityConfigured || !client) return []

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     'Book your luxury villa stay in Lombok, Indonesia. Verified properties, 24/7 guest support, premium experience.',
 }
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getProperties(): Promise<BookableProperty[]> {
   if (!isSanityConfigured || !client) return []

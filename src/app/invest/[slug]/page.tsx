@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button'
 import ImageGallery from '@/components/projects/ImageGallery'
 import LeadForm from '@/components/invest/LeadForm'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getOpportunity(slug: string): Promise<InvestmentOpportunity | null> {
   if (!isSanityConfigured || !client) return null

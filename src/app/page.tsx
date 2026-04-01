@@ -10,7 +10,7 @@ import Testimonials from '@/components/home/Testimonials'
 import LombokStrip from '@/components/home/LombokStrip'
 import CtaBanner from '@/components/home/CtaBanner'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getData() {
   if (!isSanityConfigured || !client) {

@@ -5,7 +5,7 @@ import { PROJECT_BY_SLUG_QUERY } from '@/lib/sanity.queries'
 import ProjectDetail from '@/components/projects/ProjectDetail'
 import type { Project } from '@/types'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 async function getProject(slug: string): Promise<Project | null> {
   if (!isSanityConfigured || !client) return null
