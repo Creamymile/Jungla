@@ -23,6 +23,7 @@ export default function CalendlyEmbed({ url }: CalendlyEmbedProps) {
             title="Schedule a call with Jungla"
             className="w-full min-h-[500px] border-0"
             loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
           />
         </div>
       </div>

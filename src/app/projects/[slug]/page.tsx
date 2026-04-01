@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
+import { client, isSanityConfigured, urlFor } from '@/lib/sanity.client'
 import { PROJECT_BY_SLUG_QUERY } from '@/lib/sanity.queries'
 import ProjectDetail from '@/components/projects/ProjectDetail'
 import type { Project } from '@/types'
@@ -29,7 +29,11 @@ export async function generateMetadata({
     description: `${project.title} in ${project.location}. ${project.status === 'delivered' ? 'A delivered Jungla project.' : 'An upcoming Jungla development.'}`,
     openGraph: {
       title: `${project.title} — Jungla`,
-      images: project.seo?.ogImage ? [{ url: '' }] : ['/og-image.jpg'],
+      images: project.seo?.ogImage
+        ? [{ url: urlFor(project.seo.ogImage).width(1200).height(630).url() }]
+        : project.coverImage
+          ? [{ url: urlFor(project.coverImage).width(1200).height(630).url() }]
+          : ['/og-image.jpg'],
     },
   }
 }

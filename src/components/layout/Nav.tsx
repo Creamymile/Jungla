@@ -60,7 +60,12 @@ export default function Nav() {
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 top-[76px] bg-black z-40 flex flex-col items-center justify-center gap-8">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+          className="fixed inset-0 top-[76px] bg-black z-40 flex flex-col items-center justify-center gap-8"
+        >
           {navLinks.map(link => (
             <Link
               key={link.href}

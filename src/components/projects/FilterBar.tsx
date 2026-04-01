@@ -51,6 +51,7 @@ export default function FilterBar() {
             <button
               key={cat.value}
               onClick={() => setFilter('category', cat.value)}
+              aria-pressed={activeCategory === cat.value}
               className={clsx(
                 'h-9 px-5 text-[11px] font-sans font-medium tracking-widest uppercase transition-all duration-300',
                 activeCategory === cat.value
@@ -78,6 +79,7 @@ export default function FilterBar() {
             <button
               key={s.value}
               onClick={() => setFilter('status', s.value)}
+              aria-pressed={activeStatus === s.value}
               className={clsx(
                 'h-9 px-5 text-[11px] font-sans font-medium tracking-widest uppercase transition-all duration-300',
                 activeStatus === s.value

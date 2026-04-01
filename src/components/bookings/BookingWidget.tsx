@@ -27,6 +27,7 @@ export default function BookingWidget({ channelManagerId, status }: BookingWidge
         title="Booking Widget"
         className="w-full min-h-[500px] border-0"
         loading="lazy"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
       />
     </div>
   )
