@@ -17,10 +17,16 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 async function getProperties(): Promise<BookableProperty[]> {
-  if (!isSanityConfigured || !client) return []
+  if (!isSanityConfigured || !client) {
+    console.log('[Bookings] Sanity not configured:', { isSanityConfigured, hasClient: !!client })
+    return []
+  }
   try {
-    return (await client.fetch(BOOKABLE_PROPERTIES_QUERY)) || []
-  } catch {
+    const data = await client.fetch(BOOKABLE_PROPERTIES_QUERY)
+    console.log('[Bookings] Fetched properties:', JSON.stringify(data?.length ?? 0))
+    return data || []
+  } catch (err) {
+    console.log('[Bookings] Fetch error:', err)
     return []
   }
 }
