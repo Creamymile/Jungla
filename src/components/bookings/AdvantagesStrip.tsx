@@ -1,5 +1,3 @@
-'use client'
-
 import { Shield, Headphones, Star, CreditCard } from 'lucide-react'
 import RevealWrapper from '@/components/ui/RevealWrapper'
 

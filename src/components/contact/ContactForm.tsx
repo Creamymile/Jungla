@@ -12,6 +12,8 @@ const schema = z.object({
   email: z.string().email('Valid email required'),
   phone: z.string().optional(),
   message: z.string().min(10, 'Please write at least a few words'),
+  // Honeypot — must remain empty
+  website: z.string().max(0).optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -63,9 +65,23 @@ export default function ContactForm() {
   return (
     <RevealWrapper>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Honeypot — hidden from humans, bots fill it */}
+        <div aria-hidden="true" className="absolute left-[-9999px] w-px h-px overflow-hidden">
+          <label htmlFor="contact-website">Website</label>
+          <input
+            {...register('website')}
+            id="contact-website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
+
         <div>
+          <label htmlFor="contact-name" className="sr-only">Full Name</label>
           <input
             {...register('name')}
+            id="contact-name"
             placeholder="Full Name *"
             className={inputClass}
           />
@@ -76,8 +92,10 @@ export default function ContactForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
+            <label htmlFor="contact-email" className="sr-only">Email</label>
             <input
               {...register('email')}
+              id="contact-email"
               type="email"
               placeholder="Email *"
               className={inputClass}
@@ -87,8 +105,10 @@ export default function ContactForm() {
             )}
           </div>
           <div>
+            <label htmlFor="contact-phone" className="sr-only">Phone</label>
             <input
               {...register('phone')}
+              id="contact-phone"
               type="tel"
               placeholder="Phone (optional)"
               className={inputClass}
@@ -97,8 +117,10 @@ export default function ContactForm() {
         </div>
 
         <div>
+          <label htmlFor="contact-message" className="sr-only">Message</label>
           <textarea
             {...register('message')}
+            id="contact-message"
             placeholder="Your Message *"
             rows={6}
             className={`${inputClass} h-auto py-3 resize-none`}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Instagram, Mail, Phone } from 'lucide-react'
+import { siteConfig } from '@/lib/site.config'
 
 const footerLinks = {
   company: [
@@ -81,25 +82,25 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-center gap-3">
                 <Mail size={16} className="text-taupe flex-shrink-0" />
-                <a href="mailto:hello@jungla.com" className="text-sm font-light hover:text-cream transition-colors">
-                  hello@jungla.com
+                <a href={`mailto:${siteConfig.email}`} className="text-sm font-light hover:text-cream transition-colors">
+                  {siteConfig.email}
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={16} className="text-taupe flex-shrink-0" />
-                <a href="tel:+6281234567890" className="text-sm font-light hover:text-cream transition-colors">
-                  +62 812 3456 7890
+                <a href={`tel:${siteConfig.phone.replace(/\s/g, '')}`} className="text-sm font-light hover:text-cream transition-colors">
+                  {siteConfig.phone}
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Instagram size={16} className="text-taupe flex-shrink-0" />
                 <a
-                  href="https://instagram.com/jungla.lombok"
+                  href={siteConfig.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-light hover:text-cream transition-colors"
                 >
-                  @jungla.lombok
+                  {siteConfig.social.instagramHandle}
                 </a>
               </li>
             </ul>
@@ -110,11 +111,19 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-cream/[0.08] px-[5.5vw] py-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-[12px] font-light text-cream/40">
-          &copy; {new Date().getFullYear()} PT Jungla Lombok. All rights reserved.
+          &copy; {new Date().getFullYear()} {siteConfig.legalName}. All rights reserved.
         </p>
-        <p className="text-[12px] font-light text-cream/40">
-          Lombok, Indonesia
-        </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <Link href="/privacy" className="text-[12px] font-light text-cream/40 hover:text-cream transition-colors">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="text-[12px] font-light text-cream/40 hover:text-cream transition-colors">
+            Terms of Service
+          </Link>
+          <p className="text-[12px] font-light text-cream/40">
+            Lombok, Indonesia
+          </p>
+        </div>
       </div>
     </footer>
   )

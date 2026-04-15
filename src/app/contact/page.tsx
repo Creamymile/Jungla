@@ -4,36 +4,36 @@ import SectionLabel from '@/components/ui/SectionLabel'
 import RevealWrapper from '@/components/ui/RevealWrapper'
 import ContactForm from '@/components/contact/ContactForm'
 import CalendlyEmbed from '@/components/contact/CalendlyEmbed'
+import { siteConfig } from '@/lib/site.config'
 
 export const metadata: Metadata = {
-  title: 'Contact — Jungla',
-  description:
-    'Get in touch with Jungla. We respond within 24 hours. Book a call, send a message, or visit us in Lombok.',
+  title: `Contact — ${siteConfig.name}`,
+  description: `Get in touch with ${siteConfig.name}. We respond within 24 hours. Book a call, send a message, or visit us in Lombok.`,
 }
 
 const contactInfo = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'hello@jungla.com',
-    href: 'mailto:hello@jungla.com',
+    value: siteConfig.email,
+    href: `mailto:${siteConfig.email}`,
   },
   {
     icon: Phone,
     label: 'WhatsApp',
-    value: '+62 812 3456 7890',
-    href: 'https://wa.me/6281234567890',
+    value: siteConfig.phone,
+    href: `https://wa.me/${siteConfig.whatsapp}`,
   },
   {
     icon: Instagram,
     label: 'Instagram',
-    value: '@jungla.lombok',
-    href: 'https://instagram.com/jungla.lombok',
+    value: siteConfig.social.instagramHandle,
+    href: siteConfig.social.instagram,
   },
   {
     icon: MapPin,
     label: 'Office',
-    value: 'Kuta, Lombok Tengah, NTB, Indonesia',
+    value: `${siteConfig.address.locality}, ${siteConfig.address.region}, ${siteConfig.address.countryName}`,
   },
 ]
 

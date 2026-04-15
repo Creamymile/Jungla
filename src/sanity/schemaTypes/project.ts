@@ -16,6 +16,21 @@ export default defineType({
     defineField({ name: 'description', type: 'array', of: [{ type: 'block' }] }),
     defineField({ name: 'gallery', type: 'array', of: [{ type: 'image', options: { hotspot: true } }] }),
     defineField({ name: 'coverImage', type: 'image', options: { hotspot: true } }),
+    defineField({
+      name: 'amenities',
+      title: 'Amenities',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        list: [
+          'Private Pool', 'Infinity Pool', 'Garden', 'Ocean View', 'Mountain View',
+          'Air Conditioning', 'WiFi', 'Smart TV', 'Fully Equipped Kitchen', 'BBQ Area',
+          'Outdoor Shower', 'Parking', 'Security', 'Housekeeping', 'Laundry',
+          'Workspace', 'Gym', 'Yoga Deck', 'Rooftop Terrace', 'Jacuzzi',
+          'King Size Bed', 'Ensuite Bathroom', 'Rain Shower', 'Safe Box', 'Concierge',
+        ],
+      },
+    }),
     defineField({ name: 'isBookable', type: 'boolean', initialValue: false }),
     defineField({ name: 'bookingId', type: 'string', description: 'Channel manager property ID' }),
     defineField({ name: 'featured', type: 'boolean', initialValue: false }),

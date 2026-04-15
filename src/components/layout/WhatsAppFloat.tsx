@@ -1,11 +1,10 @@
 'use client'
 
 import { MessageCircle } from 'lucide-react'
+import { siteConfig } from '@/lib/site.config'
 
-const WHATSAPP_NUMBER = '6281234567890'
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Hi Jungla! I found you on your website and I'd like to know more."
-)
+const WHATSAPP_NUMBER = siteConfig.whatsapp
+const WHATSAPP_MESSAGE = encodeURIComponent(siteConfig.whatsappMessage)
 
 export default function WhatsAppFloat() {
   return (

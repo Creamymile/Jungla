@@ -20,7 +20,7 @@ export const PROJECT_BY_SLUG_QUERY = `
   *[_type == "project" && slug.current == $slug && !(_id in path("drafts.**"))][0] {
     _id, title, slug, status, category, location,
     bedrooms, sizeSqm, poolType, description,
-    gallery, coverImage, isBookable, bookingId, seo
+    gallery, coverImage, amenities, isBookable, bookingId, seo
   }
 `
 
@@ -55,12 +55,42 @@ export const TEAM_QUERY = `
   }
 `
 
-// Bookable properties
+// Projects with isBookable toggled on (shown on bookings page automatically)
+export const BOOKABLE_PROJECTS_QUERY = `
+  *[_type == "project" && isBookable == true && !(_id in path("drafts.**"))] | order(_createdAt desc) {
+    _id, title, slug, location, bedrooms,
+    poolType, coverImage, isBookable
+  }
+`
+
+// Bookable properties (standalone document type)
 export const BOOKABLE_PROPERTIES_QUERY = `
   *[_type == "bookableProperty" && !(_id in path("drafts.**"))] | order(_createdAt asc) {
     _id, name, priceFrom, currency, maxGuests,
     channelManagerId, status, amenities, coverImage,
-    project->{ title, slug, location }
+    project->{ _id, title, slug, location }
+  }
+`
+
+// Bookable property linked to a specific project (for merging amenities + booking info on detail page)
+export const BOOKABLE_PROPERTY_BY_PROJECT_QUERY = `
+  *[_type == "bookableProperty" && project._ref == $projectId && !(_id in path("drafts.**"))][0] {
+    _id, name, priceFrom, currency, maxGuests,
+    status, amenities, channelManagerId
+  }
+`
+
+// All project slugs (for generateStaticParams)
+export const ALL_PROJECT_SLUGS_QUERY = `
+  *[_type == "project" && defined(slug.current) && !(_id in path("drafts.**"))]{
+    "slug": slug.current
+  }
+`
+
+// All invest opportunity slugs (for generateStaticParams)
+export const ALL_INVEST_SLUGS_QUERY = `
+  *[_type == "investmentOpportunity" && defined(slug.current) && !(_id in path("drafts.**"))]{
+    "slug": slug.current
   }
 `
 

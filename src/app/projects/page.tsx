@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
+import { isSanityConfigured, sanityFetch } from '@/lib/sanity.client'
 import { ALL_PROJECTS_QUERY } from '@/lib/sanity.queries'
 import type { Project } from '@/types'
 import SectionLabel from '@/components/ui/SectionLabel'
@@ -13,12 +13,12 @@ export const metadata: Metadata = {
     'Explore our luxury villa projects in Lombok, Indonesia. From delivered masterpieces to upcoming developments.',
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 async function getProjects(): Promise<Project[]> {
-  if (!isSanityConfigured || !client) return []
+  if (!isSanityConfigured) return []
   try {
-    return (await client.fetch(ALL_PROJECTS_QUERY)) || []
+    return (await sanityFetch<Project[]>(ALL_PROJECTS_QUERY)) || []
   } catch {
     return []
   }

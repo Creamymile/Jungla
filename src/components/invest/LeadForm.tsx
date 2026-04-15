@@ -15,6 +15,8 @@ const schema = z.object({
   country: z.string().min(1, 'Required'),
   budget: z.string().optional(),
   message: z.string().optional(),
+  // Honeypot
+  website: z.string().max(0).optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -94,10 +96,24 @@ export default function LeadForm() {
 
         <RevealWrapper delay={0.15}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Honeypot — hidden from humans, bots fill it */}
+            <div aria-hidden="true" className="absolute left-[-9999px] w-px h-px overflow-hidden">
+              <label htmlFor="lead-website">Website</label>
+              <input
+                {...register('website')}
+                id="lead-website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
+                <label htmlFor="lead-firstName" className="sr-only">First Name</label>
                 <input
                   {...register('firstName')}
+                  id="lead-firstName"
                   placeholder="First Name"
                   className={inputClass}
                 />
@@ -106,8 +122,10 @@ export default function LeadForm() {
                 )}
               </div>
               <div>
+                <label htmlFor="lead-lastName" className="sr-only">Last Name</label>
                 <input
                   {...register('lastName')}
+                  id="lead-lastName"
                   placeholder="Last Name"
                   className={inputClass}
                 />
@@ -119,8 +137,10 @@ export default function LeadForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
+                <label htmlFor="lead-email" className="sr-only">Email</label>
                 <input
                   {...register('email')}
+                  id="lead-email"
                   type="email"
                   placeholder="Email *"
                   className={inputClass}
@@ -130,8 +150,10 @@ export default function LeadForm() {
                 )}
               </div>
               <div>
+                <label htmlFor="lead-phone" className="sr-only">Phone</label>
                 <input
                   {...register('phone')}
+                  id="lead-phone"
                   type="tel"
                   placeholder="Phone *"
                   className={inputClass}
@@ -144,8 +166,10 @@ export default function LeadForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
+                <label htmlFor="lead-country" className="sr-only">Country</label>
                 <input
                   {...register('country')}
+                  id="lead-country"
                   placeholder="Country *"
                   className={inputClass}
                 />
@@ -154,8 +178,10 @@ export default function LeadForm() {
                 )}
               </div>
               <div>
+                <label htmlFor="lead-budget" className="sr-only">Budget Range</label>
                 <select
                   {...register('budget')}
+                  id="lead-budget"
                   className={`${inputClass} appearance-none`}
                   defaultValue=""
                 >
@@ -172,8 +198,10 @@ export default function LeadForm() {
             </div>
 
             <div>
+              <label htmlFor="lead-message" className="sr-only">Message</label>
               <textarea
                 {...register('message')}
+                id="lead-message"
                 placeholder="Message (optional)"
                 rows={4}
                 className={`${inputClass} h-auto py-3 resize-none`}

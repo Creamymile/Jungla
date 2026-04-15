@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
+import { siteConfig } from '@/lib/site.config'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jungla.com'
+const SITE_URL = siteConfig.url
 
 export default function robots(): MetadataRoute.Robots {
   return {

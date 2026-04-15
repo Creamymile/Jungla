@@ -18,6 +18,7 @@ export interface Project {
   description: any[]
   gallery: SanityImage[]
   coverImage: SanityImage
+  amenities?: string[]
   isBookable: boolean
   bookingId?: string
   featured: boolean

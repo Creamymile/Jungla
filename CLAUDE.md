@@ -55,20 +55,28 @@ npm run lint         # ESLint
 - `sitemap.ts` generates static + dynamic (Sanity) routes at `/sitemap.xml`
 - `robots.ts` allows all, disallows `/api/` and `/studio/`
 
+## Site Config
+
+`src/lib/site.config.ts` — single source of truth for brand contact details, social handles, and legal entity info. Update this file when the client provides real phone/email/Instagram values.
+
 ## API Routes
 
-- `POST /api/contact` — validates name/email/message, sends notification + auto-reply via Resend
-- `POST /api/invest-lead` — validates email/phone/country, sends notification + auto-reply via Resend
+- `POST /api/contact` — validates name/email/message, honeypot check, rate-limited, sends via Resend
+- `POST /api/invest-lead` — validates email/phone/country, honeypot check, rate-limited, sends via Resend
+- `POST /api/booking-inquiry` — validates dates/guests/contact, honeypot check, rate-limited, sends inquiry + auto-reply
+- `POST /api/revalidate?secret=` — Sanity webhook endpoint, calls `revalidateTag('sanity')` to flush ISR cache
+
+## Caching Strategy
+
+- All Sanity data is fetched via `sanityFetch()` which uses `next: { tags: ['sanity'], revalidate: 60 }`
+- Pages use ISR (`export const revalidate = 60`) — most are statically prerendered at build time
+- Dynamic routes (`/projects/[slug]`, `/invest/[slug]`) use `generateStaticParams` for build-time pre-rendering
+- On-demand revalidation: Sanity webhook → `POST /api/revalidate` → `revalidateTag('sanity')` flushes all Sanity data
 
 ## Environment Variables
 
-Stored in `.env.local` (never committed): `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `RESEND_API_KEY`, `CONTACT_EMAIL`, `NEXT_PUBLIC_SITE_URL`
-
-## Build Phases (all complete)
-
-- Phase 1: Shell — Nav, Footer, WhatsApp, UI components, folder structure, Sanity schemas
-- Phase 2: Homepage (Hero, IntroSplit, ServicesGrid, WhyJungla, FeaturedProjects, Testimonials, LombokStrip, CtaBanner)
-- Phase 3: Projects (FilterBar, ProjectCard, ProjectGrid, ImageGallery, ProjectDetail, listing + detail pages)
-- Phase 4: Invest (InvestHero, InvestmentModel, OpportunityCard, LeadForm) & Bookings (BookingCard, BookingWidget, AdvantagesStrip)
-- Phase 5: About (FounderStory, TeamGrid, ApproachSteps, ValuesSection) & Contact (ContactForm, CalendlyEmbed)
-- Phase 6: API routes, SEO metadata, JSON-LD, sitemap, robots.txt
+Stored in `.env.local` (never committed). See `.env.example` for the full list:
+- `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `SANITY_API_TOKEN`
+- `SANITY_REVALIDATE_SECRET` (for webhook-based cache invalidation)
+- `RESEND_API_KEY`, `CONTACT_EMAIL`
+- `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` (optional)

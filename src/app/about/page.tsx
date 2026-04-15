@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
+import { isSanityConfigured, sanityFetch } from '@/lib/sanity.client'
 import { TEAM_QUERY } from '@/lib/sanity.queries'
 import type { TeamMember } from '@/types'
 import SectionLabel from '@/components/ui/SectionLabel'
@@ -16,12 +16,12 @@ export const metadata: Metadata = {
     'Meet the Jungla team. European standards, island soul — luxury villa construction and management in Lombok, Indonesia.',
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 async function getTeam(): Promise<TeamMember[]> {
-  if (!isSanityConfigured || !client) return []
+  if (!isSanityConfigured) return []
   try {
-    return await client.fetch(TEAM_QUERY)
+    return await sanityFetch<TeamMember[]>(TEAM_QUERY)
   } catch {
     return []
   }

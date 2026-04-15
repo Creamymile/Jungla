@@ -2,20 +2,31 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PortableText } from '@portabletext/react'
 import { TrendingUp, Clock, DollarSign } from 'lucide-react'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
-import { INVEST_BY_SLUG_QUERY } from '@/lib/sanity.queries'
+import { isSanityConfigured, sanityFetch, urlFor } from '@/lib/sanity.client'
+import { INVEST_BY_SLUG_QUERY, ALL_INVEST_SLUGS_QUERY } from '@/lib/sanity.queries'
 import type { InvestmentOpportunity } from '@/types'
 import RevealWrapper from '@/components/ui/RevealWrapper'
 import Button from '@/components/ui/Button'
 import ImageGallery from '@/components/projects/ImageGallery'
 import LeadForm from '@/components/invest/LeadForm'
+import { siteConfig } from '@/lib/site.config'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
+
+export async function generateStaticParams() {
+  if (!isSanityConfigured) return []
+  try {
+    const slugs = await sanityFetch<{ slug: string }[]>(ALL_INVEST_SLUGS_QUERY)
+    return (slugs || []).map((s) => ({ slug: s.slug }))
+  } catch {
+    return []
+  }
+}
 
 async function getOpportunity(slug: string): Promise<InvestmentOpportunity | null> {
-  if (!isSanityConfigured || !client) return null
+  if (!isSanityConfigured) return null
   try {
-    return (await client.fetch(INVEST_BY_SLUG_QUERY, { slug })) || null
+    return (await sanityFetch<InvestmentOpportunity | null>(INVEST_BY_SLUG_QUERY, { slug })) || null
   } catch {
     return null
   }
@@ -32,6 +43,12 @@ export async function generateMetadata({
   return {
     title: `${opp.title} — Jungla Investment`,
     description: `Invest in ${opp.title}. ${opp.investmentRange || ''} investment range with ${opp.expectedROI || ''} expected ROI.`,
+    openGraph: {
+      title: `${opp.title} — Jungla Investment`,
+      images: opp.coverImage
+        ? [{ url: urlFor(opp.coverImage).width(1200).height(630).url() }]
+        : [],
+    },
   }
 }
 
@@ -62,8 +79,8 @@ export default async function InvestDetailPage({
     description: `Invest in ${opp.title} — ${opp.investmentRange || ''} investment range with ${opp.expectedROI || ''} expected ROI in Lombok, Indonesia.`,
     provider: {
       '@type': 'Organization',
-      name: 'PT Jungla Lombok',
-      url: 'https://jungla.com',
+      name: siteConfig.legalName,
+      url: siteConfig.url,
     },
   }
 

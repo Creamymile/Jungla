@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
+import { isSanityConfigured, sanityFetch } from '@/lib/sanity.client'
 import { INVEST_OPPORTUNITIES_QUERY } from '@/lib/sanity.queries'
 import type { InvestmentOpportunity } from '@/types'
 import InvestHero from '@/components/invest/InvestHero'
@@ -14,12 +14,12 @@ export const metadata: Metadata = {
     'Invest in luxury villas in Lombok, Indonesia. Curated opportunities, transparent models, proven returns with full management.',
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 async function getOpportunities(): Promise<InvestmentOpportunity[]> {
-  if (!isSanityConfigured || !client) return []
+  if (!isSanityConfigured) return []
   try {
-    return (await client.fetch(INVEST_OPPORTUNITIES_QUERY)) || []
+    return (await sanityFetch<InvestmentOpportunity[]>(INVEST_OPPORTUNITIES_QUERY)) || []
   } catch {
     return []
   }

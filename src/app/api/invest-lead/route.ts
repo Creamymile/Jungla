@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { siteConfig } from '@/lib/site.config'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -41,6 +42,8 @@ const investLeadSchema = z.object({
   country: z.string().min(1).max(100).transform(s => s.trim()),
   budget: z.string().max(100).optional().default(''),
   message: z.string().max(5000).optional().default(''),
+  // Honeypot
+  website: z.string().max(0).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -55,6 +58,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+
+    // Honeypot — silently accept to fool bots
+    if (body?.website) {
+      return NextResponse.json({ success: true })
+    }
+
     const result = investLeadSchema.safeParse(body)
 
     if (!result.success) {
@@ -74,11 +83,11 @@ export async function POST(req: NextRequest) {
     const safeMessage = escapeHtml(message || 'No message provided')
     const safeFirstName = escapeHtml(firstName || 'Investor')
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jungla.com'
+    const siteUrl = siteConfig.url
 
     // Notify team
     await resend.emails.send({
-      from: 'Jungla Website <noreply@jungla.com>',
+      from: `${siteConfig.name} Website <${siteConfig.emailNoReply}>`,
       to: process.env.CONTACT_EMAIL!,
       subject: `New Investment Lead: ${safeName}`,
       html: `
@@ -95,14 +104,14 @@ export async function POST(req: NextRequest) {
 
     // Auto-reply to investor
     await resend.emails.send({
-      from: 'Jungla <hello@jungla.com>',
+      from: `${siteConfig.name} <${siteConfig.email}>`,
       to: email,
-      subject: 'Your investment inquiry — Jungla Lombok',
+      subject: `Your investment inquiry — ${siteConfig.name} Lombok`,
       html: `
         <p>Dear ${safeFirstName},</p>
-        <p>Thank you for your interest in investing with Jungla. We have received your inquiry and our investment team will be in touch within 24 hours.</p>
+        <p>Thank you for your interest in investing with ${siteConfig.name}. We have received your inquiry and our investment team will be in touch within 24 hours.</p>
         <p>In the meantime, you can explore our current <a href="${siteUrl}/invest">investment opportunities</a> or <a href="${siteUrl}/projects">completed projects</a>.</p>
-        <p>Warm regards,<br/>The Jungla Investment Team</p>
+        <p>Warm regards,<br/>The ${siteConfig.name} Investment Team</p>
       `,
     })
 

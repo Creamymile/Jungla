@@ -1,9 +1,14 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Libre_Baskerville, DM_Sans } from 'next/font/google'
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import WhatsAppFloat from '@/components/layout/WhatsAppFloat'
+import CookieConsent from '@/components/layout/CookieConsent'
+import { siteConfig } from '@/lib/site.config'
 import './globals.css'
+
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
 
 const libreBaskerville = Libre_Baskerville({
   subsets: ['latin'],
@@ -21,24 +26,23 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://jungla.com'),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: 'Jungla — Luxury Villa Construction & Management, Lombok',
-    template: '%s | Jungla',
+    default: `${siteConfig.name} — Luxury Villa Construction & Management, Lombok`,
+    template: `%s | ${siteConfig.name}`,
   },
-  description:
-    'We design, build, and manage high-end villas in Lombok, Indonesia. Seamless investment and villa management with European standards.',
+  description: siteConfig.description,
   openGraph: {
-    title: 'Jungla — Luxury Villa Development, Lombok',
-    description:
-      'We design, build, and manage high-end villas in Lombok, Indonesia. Seamless investment and villa management with European standards.',
-    images: ['/og-image.jpg'],
+    title: `${siteConfig.name} — Luxury Villa Development, Lombok`,
+    description: siteConfig.description,
+    // OG image auto-discovered from src/app/opengraph-image.tsx
     locale: 'en_US',
     type: 'website',
-    siteName: 'Jungla',
+    siteName: siteConfig.name,
   },
   twitter: { card: 'summary_large_image' },
   robots: { index: true, follow: true },
+  manifest: '/manifest.webmanifest',
 }
 
 export default function RootLayout({
@@ -48,13 +52,40 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {plausibleDomain && (
+          <Script
+            id="plausible-loader"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    if (localStorage.getItem('jungla-cookie-consent') === 'accepted') {
+                      var s = document.createElement('script');
+                      s.defer = true;
+                      s.dataset.domain = '${plausibleDomain}';
+                      s.src = 'https://plausible.io/js/script.outbound-links.js';
+                      document.head.appendChild(s);
+                    }
+                  } catch(e) {}
+                })();
+              `,
+            }}
+          />
+        )}
+      </head>
       <body
         className={`${libreBaskerville.variable} ${dmSans.variable} font-sans antialiased`}
       >
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-4 focus:left-4 focus:bg-black focus:text-cream focus:px-4 focus:py-2 focus:text-sm">
+          Skip to main content
+        </a>
         <Nav />
-        <main className="pt-[var(--nav-height)]">{children}</main>
+        <main id="main-content" className="pt-[var(--nav-height)]">{children}</main>
         <Footer />
         <WhatsAppFloat />
+        <CookieConsent />
       </body>
     </html>
   )

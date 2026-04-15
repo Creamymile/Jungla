@@ -57,7 +57,29 @@ export default function ProjectGrid({ projects }: ProjectGridProps) {
     )
   }
 
-  // Masonry layout when showing all projects
+  // For 1-2 items, use a simple equal-column grid
+  if (filtered.length <= 2) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <AnimatePresence mode="popLayout">
+          {filtered.map((project, i) => (
+            <motion.div
+              key={project._id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+            >
+              <ProjectCard project={project} tall />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
+  // Masonry layout when showing 3+ projects
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
       <AnimatePresence mode="popLayout">

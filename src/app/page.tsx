@@ -1,5 +1,6 @@
-import { client, isSanityConfigured } from '@/lib/sanity.client'
+import { isSanityConfigured, sanityFetch } from '@/lib/sanity.client'
 import { FEATURED_PROJECTS_QUERY, TESTIMONIALS_QUERY } from '@/lib/sanity.queries'
+import { siteConfig } from '@/lib/site.config'
 import Hero from '@/components/home/Hero'
 import Marquee from '@/components/ui/Marquee'
 import IntroSplit from '@/components/home/IntroSplit'
@@ -10,16 +11,17 @@ import Testimonials from '@/components/home/Testimonials'
 import LombokStrip from '@/components/home/LombokStrip'
 import CtaBanner from '@/components/home/CtaBanner'
 
-export const dynamic = 'force-dynamic'
+// ISR: regenerate at most every 60s; on-demand revalidation via /api/revalidate
+export const revalidate = 60
 
 async function getData() {
-  if (!isSanityConfigured || !client) {
+  if (!isSanityConfigured) {
     return { projects: [], testimonials: [] }
   }
   try {
     const [projects, testimonials] = await Promise.all([
-      client.fetch(FEATURED_PROJECTS_QUERY),
-      client.fetch(TESTIMONIALS_QUERY),
+      sanityFetch<any[]>(FEATURED_PROJECTS_QUERY),
+      sanityFetch<any[]>(TESTIMONIALS_QUERY),
     ])
     return { projects, testimonials }
   } catch {
@@ -30,21 +32,20 @@ async function getData() {
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Jungla',
-  legalName: 'PT Jungla Lombok',
-  url: 'https://jungla.com',
-  logo: 'https://jungla.com/og-image.jpg',
-  description:
-    'Luxury villa construction & management in Lombok, Indonesia. European standards, island soul.',
+  name: siteConfig.name,
+  legalName: siteConfig.legalName,
+  url: siteConfig.url,
+  logo: `${siteConfig.url}${siteConfig.ogImage}`,
+  description: siteConfig.description,
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Kuta',
-    addressRegion: 'Lombok Tengah',
-    addressCountry: 'ID',
+    addressLocality: siteConfig.address.locality,
+    addressRegion: siteConfig.address.region,
+    addressCountry: siteConfig.address.country,
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'hello@jungla.com',
+    email: siteConfig.email,
     contactType: 'customer service',
   },
 }

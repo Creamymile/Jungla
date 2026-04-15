@@ -3,7 +3,7 @@ import clsx from 'clsx'
 
 interface ButtonProps {
   href?: string
-  variant?: 'cream' | 'ghost' | 'dark'
+  variant?: 'cream' | 'ghost' | 'dark' | 'outline'
   children: React.ReactNode
   className?: string
   onClick?: () => void
@@ -25,6 +25,7 @@ export default function Button({
     cream: 'bg-cream text-black border border-cream hover:bg-black hover:text-cream',
     ghost: 'bg-transparent text-cream border border-cream/40 hover:bg-cream hover:text-black',
     dark: 'bg-black text-cream border border-black hover:bg-cream hover:text-black',
+    outline: 'bg-transparent text-black border border-black/20 hover:bg-black hover:text-cream',
   }
 
   const classes = clsx(base, variants[variant], className)

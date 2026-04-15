@@ -27,6 +27,8 @@ export default function Hero() {
       <div className="absolute inset-0 z-0 animate-hero-zoom">
         <div
           className="absolute inset-0 bg-cover bg-center"
+          role="img"
+          aria-label="Luxury villa with pool surrounded by tropical vegetation in Lombok, Indonesia"
           style={{
             backgroundImage:
               "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80')",

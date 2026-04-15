@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { siteConfig } from '@/lib/site.config'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -38,6 +39,8 @@ const contactSchema = z.object({
   email: safeEmail,
   phone: z.string().max(30).optional().default(''),
   message: z.string().min(10).max(5000).transform(s => s.trim()),
+  // Honeypot — bots fill this; humans never see it
+  website: z.string().max(0).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -52,6 +55,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
+
+    // Honeypot — silently accept to fool bots, but don't send email
+    if (body?.website) {
+      return NextResponse.json({ success: true })
+    }
+
     const result = contactSchema.safeParse(body)
 
     if (!result.success) {
@@ -67,11 +76,11 @@ export async function POST(req: NextRequest) {
     const safePhone = escapeHtml(phone || 'Not provided')
     const safeMessage = escapeHtml(message)
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jungla.com'
+    const siteUrl = siteConfig.url
 
     // Notify team
     await resend.emails.send({
-      from: 'Jungla Website <noreply@jungla.com>',
+      from: `${siteConfig.name} Website <${siteConfig.emailNoReply}>`,
       to: process.env.CONTACT_EMAIL!,
       subject: `New Contact: ${safeName}`,
       html: `
@@ -86,14 +95,14 @@ export async function POST(req: NextRequest) {
 
     // Auto-reply to user
     await resend.emails.send({
-      from: 'Jungla <hello@jungla.com>',
+      from: `${siteConfig.name} <${siteConfig.email}>`,
       to: email,
-      subject: 'We received your message — Jungla Lombok',
+      subject: `We received your message — ${siteConfig.name} Lombok`,
       html: `
         <p>Dear ${safeName},</p>
         <p>Thank you for reaching out. We will get back to you within 24 hours.</p>
         <p>In the meantime, feel free to explore our <a href="${siteUrl}/projects">projects</a> or <a href="${siteUrl}/invest">investment opportunities</a>.</p>
-        <p>Warm regards,<br/>The Jungla Team</p>
+        <p>Warm regards,<br/>The ${siteConfig.name} Team</p>
       `,
     })
 

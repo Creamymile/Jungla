@@ -1,24 +1,28 @@
 import { MetadataRoute } from 'next'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
+import { isSanityConfigured, sanityFetch } from '@/lib/sanity.client'
+import { siteConfig } from '@/lib/site.config'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://jungla.com'
+const SITE_URL = siteConfig.url
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPages = ['', '/projects', '/invest', '/bookings', '/about', '/contact'].map(
-    (path) => ({
-      url: `${SITE_URL}${path}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: path === '' ? 1 : 0.8,
-    })
+  const staticPages = ['', '/projects', '/invest', '/bookings', '/about', '/contact', '/privacy', '/terms'].map(
+    (path) => {
+      const isLegal = path === '/privacy' || path === '/terms'
+      return {
+        url: `${SITE_URL}${path}`,
+        lastModified: new Date(),
+        changeFrequency: (isLegal ? 'yearly' : 'weekly') as 'yearly' | 'weekly',
+        priority: path === '' ? 1 : isLegal ? 0.3 : 0.8,
+      }
+    }
   )
 
-  if (!isSanityConfigured || !client) return staticPages
+  if (!isSanityConfigured) return staticPages
 
   try {
     const [projects, opportunities] = await Promise.all([
-      client.fetch(`*[_type == "project"]{ slug, _updatedAt }`),
-      client.fetch(`*[_type == "investmentOpportunity"]{ slug, _updatedAt }`),
+      sanityFetch<any[]>(`*[_type == "project"]{ slug, _updatedAt }`),
+      sanityFetch<any[]>(`*[_type == "investmentOpportunity"]{ slug, _updatedAt }`),
     ])
 
     const projectPages = (projects || []).map((p: any) => ({

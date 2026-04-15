@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
-import { client, isSanityConfigured } from '@/lib/sanity.client'
-import { BOOKABLE_PROPERTIES_QUERY } from '@/lib/sanity.queries'
-import type { BookableProperty } from '@/types'
+import { isSanityConfigured, sanityFetch } from '@/lib/sanity.client'
+import { BOOKABLE_PROPERTIES_QUERY, BOOKABLE_PROJECTS_QUERY } from '@/lib/sanity.queries'
+import type { BookableProperty, Project } from '@/types'
 import SectionLabel from '@/components/ui/SectionLabel'
 import RevealWrapper from '@/components/ui/RevealWrapper'
 import BookingCard from '@/components/bookings/BookingCard'
@@ -14,19 +14,47 @@ export const metadata: Metadata = {
     'Book your luxury villa stay in Lombok, Indonesia. Verified properties, 24/7 guest support, premium experience.',
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
-async function getProperties(): Promise<BookableProperty[]> {
-  if (!isSanityConfigured || !client) return []
+export type BookingItem =
+  | (BookableProperty & { source: 'property' })
+  | (Project & { source: 'project' })
+
+async function getBookingItems(): Promise<BookingItem[]> {
+  if (!isSanityConfigured) return []
   try {
-    return (await client.fetch(BOOKABLE_PROPERTIES_QUERY)) || []
+    const [properties, projects] = await Promise.all([
+      sanityFetch<BookableProperty[]>(BOOKABLE_PROPERTIES_QUERY),
+      sanityFetch<Project[]>(BOOKABLE_PROJECTS_QUERY),
+    ])
+
+    const items: BookingItem[] = []
+
+    // Add standalone bookable properties
+    for (const p of properties || []) {
+      items.push({ ...p, source: 'property' })
+    }
+
+    // Add bookable projects (skip if already linked via a bookableProperty)
+    const linkedProjectIds = new Set(
+      (properties || [])
+        .map((p) => (p.project as any)?._id)
+        .filter(Boolean)
+    )
+    for (const proj of projects || []) {
+      if (!linkedProjectIds.has(proj._id)) {
+        items.push({ ...proj, source: 'project' })
+      }
+    }
+
+    return items
   } catch {
     return []
   }
 }
 
 export default async function BookingsPage() {
-  const properties = await getProperties()
+  const items = await getBookingItems()
 
   return (
     <>
@@ -50,11 +78,11 @@ export default async function BookingsPage() {
 
       {/* Properties grid */}
       <section className="px-[5.5vw] pb-[120px]">
-        {properties.length > 0 ? (
+        {items.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-            {properties.map((property, i) => (
-              <RevealWrapper key={property._id} delay={i * 0.1} className="h-full">
-                <BookingCard property={property} />
+            {items.map((item, i) => (
+              <RevealWrapper key={item._id} delay={i * 0.1} className="h-full">
+                <BookingCard item={item} />
               </RevealWrapper>
             ))}
           </div>

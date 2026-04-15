@@ -51,12 +51,12 @@ export default function ProjectCard({ project, tall }: ProjectCardProps) {
       )}
 
       {/* Info bar — always visible at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black/90 group-hover:bg-black transition-colors duration-300 px-5 py-4 flex items-center justify-between z-10">
-        <div className="min-w-0">
-          <h3 className="font-serif text-cream text-base md:text-lg truncate">
+      <div className="absolute bottom-0 left-0 right-0 bg-black/90 group-hover:bg-black transition-colors duration-300 px-4 py-3 md:px-5 md:py-4 flex items-center justify-between gap-3 z-10">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-serif text-cream text-sm md:text-lg truncate">
             {project.title}
           </h3>
-          <p className="text-cream/40 text-[11px] font-sans tracking-wider mt-0.5">
+          <p className="text-cream/80 text-xs md:text-sm font-sans font-light tracking-wide mt-1 truncate">
             {project.location}
             {project.bedrooms ? ` · ${project.bedrooms} bed` : ''}
             {project.sizeSqm ? ` · ${project.sizeSqm}m²` : ''}
@@ -65,7 +65,7 @@ export default function ProjectCard({ project, tall }: ProjectCardProps) {
         </div>
 
         {/* Buttons slide in from right on hover */}
-        <div className="flex gap-2 flex-shrink-0 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="hidden md:flex gap-2 flex-shrink-0 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
           {project.isBookable && (
             <span className="h-8 px-4 bg-cream text-black text-[10px] font-sans font-medium tracking-widest uppercase inline-flex items-center whitespace-nowrap">
               Book Stay
