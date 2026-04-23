@@ -3,7 +3,7 @@
 export const FEATURED_PROJECTS_QUERY = `
   *[_type == "project" && featured == true && !(_id in path("drafts.**"))] | order(_createdAt desc) [0...5] {
     _id, title, slug, status, category, location,
-    bedrooms, poolType, isBookable, coverImage
+    bedrooms, sizeSqm, poolType, isBookable, coverImage
   }
 `
 

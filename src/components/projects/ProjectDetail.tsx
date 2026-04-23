@@ -230,14 +230,14 @@ export default function ProjectDetail({ project, bookable }: ProjectDetailProps)
               onClick={() => setAmenitiesOpen(false)}
             />
 
-            {/* Modal wrapper — flex centering avoids transform conflicts with Framer Motion */}
-            <div className="fixed inset-0 z-[9991] flex items-center justify-center p-4 pointer-events-none">
+            {/* Modal wrapper — bottom-sheet on mobile, centred on desktop */}
+            <div className="fixed inset-0 z-[9991] flex items-end lg:items-center justify-center lg:p-4 pointer-events-none">
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 40 }}
+                exit={{ opacity: 0, y: 60 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="pointer-events-auto w-full h-full lg:h-auto lg:max-w-lg lg:max-h-[85vh] bg-white rounded-xl overflow-hidden flex flex-col shadow-2xl"
+                className="pointer-events-auto w-full rounded-t-2xl lg:rounded-xl lg:max-w-lg max-h-[92dvh] lg:max-h-[85vh] bg-white overflow-hidden flex flex-col shadow-2xl"
               >
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-black/10 flex-shrink-0">

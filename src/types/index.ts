@@ -64,10 +64,24 @@ export interface TeamMember {
   order: number
 }
 
+/**
+ * Partial project reference — only the fields projected by
+ * BOOKABLE_PROPERTIES_QUERY via `project->{ _id, title, slug, location }`.
+ * Use this instead of the full Project type to avoid accessing fields
+ * that were never fetched from Sanity.
+ */
+export interface ProjectRef {
+  _id: string
+  title: string
+  slug: { current: string }
+  location?: string
+}
+
 export interface BookableProperty {
   _id: string
   name: string
-  project: Project
+  /** Partial project reference — only _id, title, slug, location are fetched */
+  project: ProjectRef
   priceFrom: number
   currency: 'EUR' | 'USD' | 'IDR'
   maxGuests: number

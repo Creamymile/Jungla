@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button'
 import BookingInquiryModal from '@/components/bookings/BookingInquiryModal'
 import { urlFor } from '@/lib/sanity.client'
 import type { BookingItem } from '@/app/bookings/page'
+import type { ProjectRef } from '@/types'
 
 const FALLBACK_IMAGE = '/images/placeholder-villa.svg'
 const MAX_VISIBLE_AMENITIES = 6
@@ -27,11 +28,12 @@ export default function BookingCard({ item }: BookingCardProps) {
     : item.status === 'coming-soon'
 
   // Get project slug — from project directly or via linked project reference
+  const projectRef = !isProject ? (item.project as unknown as ProjectRef) : null
   const slug = isProject
     ? item.slug?.current
-    : (item.project as any)?.slug?.current || null
+    : projectRef?.slug?.current ?? null
 
-  const location = isProject ? item.location : (item.project as any)?.location
+  const location = isProject ? item.location : projectRef?.location
   const bedrooms = isProject ? item.bedrooms : null
   const maxGuests = !isProject ? item.maxGuests : null
   const priceFrom = !isProject ? item.priceFrom : null
@@ -57,7 +59,7 @@ export default function BookingCard({ item }: BookingCardProps) {
           alt={name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-700"
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
 
         {isComingSoon && (

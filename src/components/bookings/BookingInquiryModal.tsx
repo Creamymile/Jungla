@@ -52,8 +52,11 @@ export default function BookingInquiryModal({
   const [submitted, setSubmitted] = useState(false)
   const [serverError, setServerError] = useState('')
 
-  const today = new Date().toISOString().split('T')[0]
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  // Use en-CA locale to get YYYY-MM-DD in the *guest's local timezone*, not UTC.
+  // toISOString() returns UTC midnight which can show the wrong date for guests
+  // in UTC+7 or higher (e.g. Jakarta at 00:30 → still Dec 31 in UTC).
+  const today = new Date().toLocaleDateString('en-CA')
+  const tomorrow = new Date(Date.now() + 86400000).toLocaleDateString('en-CA')
 
   const {
     register,
@@ -150,14 +153,14 @@ export default function BookingInquiryModal({
             onClick={onClose}
           />
 
-          {/* Modal wrapper — flex centering */}
-          <div role="dialog" aria-label={`Book ${propertyName}`} className="fixed inset-0 z-[9991] flex items-center justify-center p-4 pointer-events-none">
+          {/* Modal wrapper — bottom-sheet on mobile, centred on desktop */}
+          <div role="dialog" aria-label={`Book ${propertyName}`} className="fixed inset-0 z-[9991] flex items-end lg:items-center justify-center lg:p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 40 }}
+              exit={{ opacity: 0, y: 60 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="pointer-events-auto w-full h-full lg:h-auto lg:max-w-xl lg:max-h-[90vh] bg-white rounded-xl overflow-hidden flex flex-col shadow-2xl"
+              className="pointer-events-auto w-full rounded-t-2xl lg:rounded-xl lg:max-w-xl max-h-[92dvh] lg:max-h-[90vh] bg-white overflow-hidden flex flex-col shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-black/10 flex-shrink-0">

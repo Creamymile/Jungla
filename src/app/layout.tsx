@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { Libre_Baskerville, DM_Sans } from 'next/font/google'
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import WhatsAppFloat from '@/components/layout/WhatsAppFloat'
 import CookieConsent from '@/components/layout/CookieConsent'
+import PlausibleScript from '@/components/layout/PlausibleScript'
 import { siteConfig } from '@/lib/site.config'
 import './globals.css'
 
@@ -53,27 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {plausibleDomain && (
-          <Script
-            id="plausible-loader"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  try {
-                    if (localStorage.getItem('jungla-cookie-consent') === 'accepted') {
-                      var s = document.createElement('script');
-                      s.defer = true;
-                      s.dataset.domain = '${plausibleDomain}';
-                      s.src = 'https://plausible.io/js/script.outbound-links.js';
-                      document.head.appendChild(s);
-                    }
-                  } catch(e) {}
-                })();
-              `,
-            }}
-          />
-        )}
+        {plausibleDomain && <PlausibleScript domain={plausibleDomain} />}
       </head>
       <body
         className={`${libreBaskerville.variable} ${dmSans.variable} font-sans antialiased`}

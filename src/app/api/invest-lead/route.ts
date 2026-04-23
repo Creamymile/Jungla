@@ -35,8 +35,9 @@ const safeEmail = z.string().email().max(320)
   .refine(e => !/[\r\n%0A%0D]/.test(e), 'Invalid email address')
 
 const investLeadSchema = z.object({
-  firstName: z.string().max(100).optional().default('').transform(s => s.trim()),
-  lastName: z.string().max(100).optional().default('').transform(s => s.trim()),
+  // Required — matches LeadForm.tsx frontend validation
+  firstName: z.string().min(1, 'Required').max(100).transform(s => s.trim()),
+  lastName: z.string().min(1, 'Required').max(100).transform(s => s.trim()),
   email: safeEmail,
   phone: z.string().min(5).max(30),
   country: z.string().min(1).max(100).transform(s => s.trim()),

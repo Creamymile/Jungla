@@ -12,7 +12,13 @@ import { SANITY_CACHE_TAG } from '@/lib/sanity.client'
 export async function POST(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret')
 
-  if (!process.env.SANITY_REVALIDATE_SECRET || secret !== process.env.SANITY_REVALIDATE_SECRET) {
+  // Refuse entirely if the secret env var is not configured — prevents
+  // accidental cache-flush when deployed without the variable set.
+  if (!process.env.SANITY_REVALIDATE_SECRET) {
+    return NextResponse.json({ message: 'Revalidate secret not configured' }, { status: 500 })
+  }
+
+  if (secret !== process.env.SANITY_REVALIDATE_SECRET) {
     return NextResponse.json({ message: 'Invalid secret' }, { status: 401 })
   }
 
