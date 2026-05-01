@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
     revalidateTag(SANITY_CACHE_TAG)
     revalidatePath('/', 'layout')
     return NextResponse.json({ revalidated: true, now: Date.now() })
-  } catch (err: any) {
-    return NextResponse.json({ message: err.message }, { status: 500 })
+  } catch (err: unknown) {
+    // Log server-side only — never expose internal error details to callers
+    console.error('[revalidate] Cache flush error:', err)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

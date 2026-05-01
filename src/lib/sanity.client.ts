@@ -1,3 +1,13 @@
+/**
+ * Sanity client — partial server / client usage:
+ *
+ *  ✅ Client-safe exports : isSanityConfigured, urlFor
+ *     (used in client components for image URL construction)
+ *
+ *  🔒 Server-only exports : client, sanityFetch, SANITY_CACHE_TAG
+ *     These call SANITY_API_TOKEN which is undefined in the browser bundle.
+ *     Only ever call sanityFetch() from Server Components or API routes.
+ */
 import { createClient } from '@sanity/client'
 import { createImageUrlBuilder } from '@sanity/image-url'
 

@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { isSanityConfigured, sanityFetch, urlFor } from '@/lib/sanity.client'
 import { PROJECT_BY_SLUG_QUERY, BOOKABLE_PROPERTY_BY_PROJECT_QUERY, ALL_PROJECT_SLUGS_QUERY } from '@/lib/sanity.queries'
+import { sanitizeForJsonLd } from '@/lib/security'
 import ProjectDetail from '@/components/projects/ProjectDetail'
 import type { Project } from '@/types'
 
@@ -92,22 +93,26 @@ export default async function ProjectDetailPage({
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jungla.com'
   const pageUrl = `${siteUrl}/projects/${project.slug?.current || params.slug}`
 
+  // Sanitise CMS-sourced strings before embedding in JSON-LD
+  const safeTitle    = sanitizeForJsonLd(project.title)
+  const safeLocation = sanitizeForJsonLd(project.location) || 'Lombok'
+
   const jsonLd = project.isBookable && bookable?.priceFrom
     ? {
         '@context': 'https://schema.org',
         '@type': 'LodgingBusiness',
-        name: project.title,
-        description: `${project.title} — a luxury villa in ${project.location || 'Lombok'}, Indonesia. Up to ${bookable.maxGuests || project.bedrooms || 2} guests.`,
+        name: safeTitle,
+        description: `${safeTitle} — a luxury villa in ${safeLocation}, Indonesia. Up to ${bookable.maxGuests || project.bedrooms || 2} guests.`,
         url: pageUrl,
         address: {
           '@type': 'PostalAddress',
-          addressLocality: project.location || 'Lombok',
+          addressLocality: safeLocation,
           addressCountry: 'ID',
         },
         numberOfRooms: project.bedrooms,
         amenityFeature: (project.amenities || []).map((a: string) => ({
           '@type': 'LocationFeatureSpecification',
-          name: a,
+          name: sanitizeForJsonLd(a),
           value: true,
         })),
         priceRange: `${bookable.currency === 'EUR' ? '€' : bookable.currency === 'USD' ? '$' : 'Rp'}${bookable.priceFrom.toLocaleString()}+`,
@@ -122,12 +127,12 @@ export default async function ProjectDetailPage({
     : {
         '@context': 'https://schema.org',
         '@type': 'RealEstateListing',
-        name: project.title,
-        description: `${project.title} — a ${project.category || 'luxury'} project by Jungla in ${project.location || 'Lombok'}, Indonesia.`,
+        name: safeTitle,
+        description: `${safeTitle} — a ${project.category || 'luxury'} project by Jungla in ${safeLocation}, Indonesia.`,
         url: pageUrl,
         address: {
           '@type': 'PostalAddress',
-          addressLocality: project.location || 'Lombok',
+          addressLocality: safeLocation,
           addressCountry: 'ID',
         },
         numberOfRooms: project.bedrooms,

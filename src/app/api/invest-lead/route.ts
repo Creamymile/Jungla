@@ -2,55 +2,39 @@ import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { siteConfig } from '@/lib/site.config'
+import {
+  escapeHtml,
+  safeEmail,
+  honeypot,
+  checkOrigin,
+  isRateLimited,
+  getClientIp,
+} from '@/lib/security'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-// Simple in-memory rate limiter (per IP, 5 requests per hour)
-const rateLimit = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT_MAX = 5
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000 // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimit.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimit.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW })
-    return false
-  }
-  entry.count++
-  return entry.count > RATE_LIMIT_MAX
-}
-
-// Email injection prevention
-const safeEmail = z.string().email().max(320)
-  .refine(e => !/[\r\n%0A%0D]/.test(e), 'Invalid email address')
-
 const investLeadSchema = z.object({
   // Required — matches LeadForm.tsx frontend validation
-  firstName: z.string().min(1, 'Required').max(100).transform(s => s.trim()),
-  lastName: z.string().min(1, 'Required').max(100).transform(s => s.trim()),
-  email: safeEmail,
-  phone: z.string().min(5).max(30),
-  country: z.string().min(1).max(100).transform(s => s.trim()),
-  budget: z.string().max(100).optional().default(''),
-  message: z.string().max(5000).optional().default(''),
+  firstName: z.string().min(1, 'Required').max(100).transform((s) => s.trim()),
+  lastName:  z.string().min(1, 'Required').max(100).transform((s) => s.trim()),
+  email:     safeEmail,
+  phone:     z.string().min(5).max(30),
+  country:   z.string().min(1).max(100).transform((s) => s.trim()),
+  budget:    z.string().max(100).optional().default(''),
+  message:   z.string().max(5000).optional().default(''),
   // Honeypot
-  website: z.string().max(0).optional(),
+  website: honeypot,
 })
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    // CSRF: reject cross-origin requests
+    if (!checkOrigin(req)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Rate limiting (best-effort — see security.ts for serverless caveat)
+    const ip = getClientIp(req)
     if (isRateLimited(ip)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
@@ -69,27 +53,26 @@ export async function POST(req: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: 'Invalid form data' },
+        { error: result.error.issues[0]?.message || 'Invalid form data' },
         { status: 400 }
       )
     }
 
     const { firstName, lastName, email, phone, country, budget, message } = result.data
-    const fullName = `${firstName} ${lastName}`.trim()
-    const safeName = escapeHtml(fullName)
+    const fullName         = `${firstName} ${lastName}`.trim()
+    const safeName         = escapeHtml(fullName)
     const safeEmailDisplay = escapeHtml(email)
-    const safePhone = escapeHtml(phone)
-    const safeCountry = escapeHtml(country)
-    const safeBudget = escapeHtml(budget || 'Not specified')
-    const safeMessage = escapeHtml(message || 'No message provided')
-    const safeFirstName = escapeHtml(firstName || 'Investor')
-
-    const siteUrl = siteConfig.url
+    const safePhone        = escapeHtml(phone)
+    const safeCountry      = escapeHtml(country)
+    const safeBudget       = escapeHtml(budget || 'Not specified')
+    const safeMessage      = escapeHtml(message || 'No message provided')
+    const safeFirstName    = escapeHtml(firstName || 'Investor')
+    const siteUrl          = siteConfig.url
 
     // Notify team
     await resend.emails.send({
-      from: `${siteConfig.name} Website <${siteConfig.emailNoReply}>`,
-      to: process.env.CONTACT_EMAIL!,
+      from:    `${siteConfig.name} Website <${siteConfig.emailNoReply}>`,
+      to:      process.env.CONTACT_EMAIL!,
       subject: `New Investment Lead: ${safeName}`,
       html: `
         <h2>New Investment Lead</h2>
@@ -105,8 +88,8 @@ export async function POST(req: NextRequest) {
 
     // Auto-reply to investor
     await resend.emails.send({
-      from: `${siteConfig.name} <${siteConfig.email}>`,
-      to: email,
+      from:    `${siteConfig.name} <${siteConfig.email}>`,
+      to:      email,
       subject: `Your investment inquiry — ${siteConfig.name} Lombok`,
       html: `
         <p>Dear ${safeFirstName},</p>
@@ -118,9 +101,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch {
-    return NextResponse.json(
-      { error: 'Failed to submit inquiry' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to submit inquiry' }, { status: 500 })
   }
 }

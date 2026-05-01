@@ -22,7 +22,11 @@ const nextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          // HSTS with preload — submit domain to https://hstspreload.org after go-live
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
+          // Cross-origin isolation headers (defence against Spectre-like side-channel attacks)
+          { key: 'Cross-Origin-Opener-Policy',   value: 'same-origin-allow-popups' },
+          { key: 'Cross-Origin-Resource-Policy',  value: 'same-site' },
           {
             key: 'Content-Security-Policy',
             value: [

@@ -2,39 +2,16 @@ import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { siteConfig } from '@/lib/site.config'
+import {
+  escapeHtml,
+  safeEmail,
+  honeypot,
+  checkOrigin,
+  isRateLimited,
+  getClientIp,
+} from '@/lib/security'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
-// Per-IP rate limiting (5 requests per hour)
-const rateLimit = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT_MAX = 5
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimit.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimit.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW })
-    return false
-  }
-  entry.count++
-  return entry.count > RATE_LIMIT_MAX
-}
-
-const safeEmail = z
-  .string()
-  .email()
-  .max(320)
-  .refine((e) => !/[\r\n%0A%0D]/.test(e), 'Invalid email address')
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')
 
@@ -42,15 +19,15 @@ const bookingSchema = z
   .object({
     propertyName: z.string().min(1).max(200).transform((s) => s.trim()),
     propertySlug: z.string().max(200).optional().default(''),
-    checkIn: isoDate,
-    checkOut: isoDate,
-    guests: z.coerce.number().int().min(1).max(50),
-    name: z.string().min(1).max(200).transform((s) => s.trim()),
-    email: safeEmail,
-    phone: z.string().max(30).optional().default(''),
-    message: z.string().max(2000).optional().default(''),
+    checkIn:      isoDate,
+    checkOut:     isoDate,
+    guests:       z.coerce.number().int().min(1).max(50),
+    name:         z.string().min(1).max(200).transform((s) => s.trim()),
+    email:        safeEmail,
+    phone:        z.string().max(30).optional().default(''),
+    message:      z.string().max(2000).optional().default(''),
     // Honeypot
-    website: z.string().max(0).optional(),
+    website: honeypot,
   })
   .refine((data) => new Date(data.checkOut) > new Date(data.checkIn), {
     message: 'Check-out must be after check-in',
@@ -59,9 +36,18 @@ const bookingSchema = z
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    // CSRF: reject cross-origin requests
+    if (!checkOrigin(req)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Rate limiting (best-effort — see security.ts for serverless caveat)
+    const ip = getClientIp(req)
     if (isRateLimited(ip)) {
-      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
     }
 
     const body = await req.json()
@@ -81,26 +67,20 @@ export async function POST(req: NextRequest) {
     }
 
     const {
-      propertyName,
-      propertySlug,
-      checkIn,
-      checkOut,
-      guests,
-      name,
-      email,
-      phone,
-      message,
+      propertyName, propertySlug,
+      checkIn, checkOut, guests,
+      name, email, phone, message,
     } = result.data
 
-    const safeProperty = escapeHtml(propertyName)
-    const safeName = escapeHtml(name)
+    const safeProperty     = escapeHtml(propertyName)
+    const safeName         = escapeHtml(name)
     const safeEmailDisplay = escapeHtml(email)
-    const safePhone = escapeHtml(phone || 'Not provided')
-    const safeMessage = escapeHtml(message || 'No additional message')
-    const safeCheckIn = escapeHtml(checkIn)
-    const safeCheckOut = escapeHtml(checkOut)
+    const safePhone        = escapeHtml(phone || 'Not provided')
+    const safeMessage      = escapeHtml(message || 'No additional message')
+    const safeCheckIn      = escapeHtml(checkIn)
+    const safeCheckOut     = escapeHtml(checkOut)
 
-    const siteUrl = siteConfig.url
+    const siteUrl     = siteConfig.url
     const propertyUrl = propertySlug ? `${siteUrl}/projects/${propertySlug}` : siteUrl
 
     // Calculate nights
@@ -110,8 +90,8 @@ export async function POST(req: NextRequest) {
 
     // Notify team
     await resend.emails.send({
-      from: `${siteConfig.name} Bookings <${siteConfig.emailNoReply}>`,
-      to: process.env.CONTACT_EMAIL!,
+      from:    `${siteConfig.name} Bookings <${siteConfig.emailNoReply}>`,
+      to:      process.env.CONTACT_EMAIL!,
       subject: `New Booking Inquiry: ${safeProperty} (${nights} nights)`,
       html: `
         <h2>New Booking Inquiry</h2>
@@ -134,8 +114,8 @@ export async function POST(req: NextRequest) {
 
     // Auto-reply to guest
     await resend.emails.send({
-      from: `${siteConfig.name} <${siteConfig.email}>`,
-      to: email,
+      from:    `${siteConfig.name} <${siteConfig.email}>`,
+      to:      email,
       subject: `Booking Inquiry Received — ${propertyName}`,
       html: `
         <p>Dear ${safeName},</p>
