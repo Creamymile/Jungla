@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import ImageGallery from '@/components/projects/ImageGallery'
 import LeadForm from '@/components/invest/LeadForm'
 import { siteConfig } from '@/lib/site.config'
+import { sanitizeForJsonLd } from '@/lib/security'
 
 export const revalidate = 60
 
@@ -72,11 +73,16 @@ export default async function InvestDetailPage({
     opp.timeline && { icon: Clock, label: 'Timeline', value: opp.timeline },
   ].filter(Boolean) as { icon: any; label: string; value: string }[]
 
+  // Sanitise CMS-sourced strings before embedding in <script type="application/ld+json">
+  const safeTitle = sanitizeForJsonLd(opp.title)
+  const safeROI   = sanitizeForJsonLd(opp.expectedROI)
+  const safeRange = sanitizeForJsonLd(opp.investmentRange)
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'InvestmentOrDeposit',
-    name: opp.title,
-    description: `Invest in ${opp.title} — ${opp.investmentRange || ''} investment range with ${opp.expectedROI || ''} expected ROI in Lombok, Indonesia.`,
+    name: safeTitle,
+    description: `Invest in ${safeTitle} — ${safeRange || ''} investment range with ${safeROI || ''} expected ROI in Lombok, Indonesia.`,
     provider: {
       '@type': 'Organization',
       name: siteConfig.legalName,

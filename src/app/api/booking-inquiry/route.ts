@@ -35,6 +35,12 @@ const bookingSchema = z
   })
 
 export async function POST(req: NextRequest) {
+  // Guard: fail fast if required env vars are not set
+  if (!process.env.RESEND_API_KEY || !process.env.CONTACT_EMAIL) {
+    console.error('[booking-inquiry] Missing RESEND_API_KEY or CONTACT_EMAIL env var')
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+  }
+
   try {
     // CSRF: reject cross-origin requests
     if (!checkOrigin(req)) {

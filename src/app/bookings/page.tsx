@@ -38,7 +38,7 @@ async function getBookingItems(): Promise<BookingItem[]> {
     // Add bookable projects (skip if already linked via a bookableProperty)
     const linkedProjectIds = new Set(
       (properties || [])
-        .map((p) => (p.project as any)?._id)
+        .map((p) => p.project?._id)
         .filter(Boolean)
     )
     for (const proj of projects || []) {
